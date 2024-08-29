@@ -8,7 +8,7 @@
             "name": "Отладка 1Script",
             "type": "oscript",
             "request": "launch",
-            "program": "D:/ПроектыOnescript/ЖурналРегистрации/ЗапускПервойБазы.os",
+            "program": "D:/git/Журнал регистрации 1С/Zhurnal-Registracii/ЗапускПервойБазы.os",
             "args": [],
             "cwd": "${workspaceRoot}",
             "env": {},

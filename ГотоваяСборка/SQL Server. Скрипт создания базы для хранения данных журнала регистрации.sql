@@ -64,7 +64,7 @@ CREATE TABLE [dbo].[Метаданные](
 	[ИнформационнаяСистема] [bigint] NOT NULL,
 	[Id] [bigint] NOT NULL,
 	[Наименование] [nvarchar](500) NULL,
-	[Uuid] [uniqueidentifier] NOT NULL,
+	[Uuid] [nvarchar](36)  NOT NULL,
  CONSTRAINT [PK_Метаданные] PRIMARY KEY CLUSTERED 
 (
 	[ИнформационнаяСистема] ASC,
@@ -145,7 +145,7 @@ CREATE TABLE [dbo].[Пользователи](
 	[ИнформационнаяСистема] [bigint] NOT NULL,
 	[Id] [bigint] NOT NULL,
 	[Наименование] [nvarchar](500) NULL,
-	[Uuid] [uniqueidentifier] NOT NULL,
+	[Uuid] [nvarchar](36) NOT NULL,
  CONSTRAINT [PK_Пользователи] PRIMARY KEY CLUSTERED 
 (
 	[ИнформационнаяСистема] ASC,
@@ -175,6 +175,20 @@ CREATE TABLE [dbo].[СостоянияТранзакции](
 (
 	[ИнформационнаяСистема] ASC,
 	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[СоответствияСтрокМетаданным](
+	[ИнформационнаяСистема] [bigint] NOT NULL,
+	[eventLogID] [bigint] NOT NULL,
+	[metadataCode] [bigint] NOT NULL
+ CONSTRAINT [PK_СоответствияСтрокМетаданным] PRIMARY KEY CLUSTERED 
+(
+	[ИнформационнаяСистема] ASC,
+	[metadataCode] ASC,
+	[eventLogID] ASC
+	
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -345,18 +359,21 @@ CREATE NONCLUSTERED INDEX [IX_Приложения_Информационная�
 	[ИнформационнаяСистема] ASC,
 	[Наименование] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
 
 CREATE NONCLUSTERED INDEX [IX_Компьютеры_ИнформационнаяСистема_Наименование] ON [dbo].[Компьютеры]
 (
 	[ИнформационнаяСистема] ASC,
 	[Наименование] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
 
 CREATE NONCLUSTERED INDEX [IX_События_ИнформационнаяСистема_Наименование] ON [dbo].[События]
 (
 	[ИнформационнаяСистема] ASC,
 	[Наименование] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
 
 CREATE NONCLUSTERED INDEX [IX_Метаданные_ИнформационнаяСистема_Наименование_Uuid] ON [dbo].[Метаданные]
 (
@@ -364,25 +381,12 @@ CREATE NONCLUSTERED INDEX [IX_Метаданные_Информационная�
 	[Наименование] ASC,
 	[Uuid] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
 
 CREATE NONCLUSTERED INDEX [IX_ПервичныеПорты_ИнформационнаяСистема_Наименование] ON [dbo].[ПервичныеПорты]
 (
 	[ИнформационнаяСистема] ASC,
 	[Наименование] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-
-CREATE NONCLUSTERED INDEX [IX_ЗаписиДанных_ИнформационнаяСистема_ИдентификаторДанных] ON [dbo].[ЗаписиДанных]
-(
-	[ИнформационнаяСистема] ASC,
-	[ИдентификаторДанных] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-GO
-
-CREATE NONCLUSTERED INDEX [IX_ЗаписиДанных_ИнформационнаяСистема_Пользователь_Период] ON [dbo].[ЗаписиДанных]
-(
-	[ИнформационнаяСистема] ASC,
-	[Пользователь] ASC,
-	[Период] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 
@@ -412,5 +416,54 @@ CREATE NONCLUSTERED INDEX [IX_РабочиеСервера_Информацио�
 (
 	[ИнформационнаяСистема] ASC,
 	[Наименование] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [Событие_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[Событие] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [Пользователь_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[Пользователь] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [Период_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[Период] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [ИдентификаторДанных_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[ИдентификаторДанных] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [УровеньСобытия_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[УровеньСобытия] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [Id_ИнформационнаяСистема] ON [dbo].[ЗаписиДанных]
+(
+	[Id] ASC,
+	[ИнформационнаяСистема] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [ИнформационнаяСистема_Id] ON [dbo].[ЗаписиДанных]
+(
+	[ИнформационнаяСистема] ASC,
+	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
