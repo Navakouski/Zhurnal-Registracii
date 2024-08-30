@@ -1,5 +1,9 @@
 # Выгрузка журнала регистрации lgd в базу SQL
 
+https://infostart.ru/1c/tools/2177724/
+![Image alt](https://infostart.ru/bitrix/templates/sandbox_empty/assets/tpl/abo/img/logo.svg)
+
+
 Для windows.
 Тестировалось на платформе 8.3.21.1393.
 
