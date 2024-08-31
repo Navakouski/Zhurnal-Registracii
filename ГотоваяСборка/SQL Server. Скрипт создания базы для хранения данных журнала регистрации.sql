@@ -186,7 +186,6 @@ CREATE TABLE [dbo].[СоответствияСтрокМетаданным](
  CONSTRAINT [PK_СоответствияСтрокМетаданным] PRIMARY KEY CLUSTERED 
 (
 	[ИнформационнаяСистема] ASC,
-	[metadataCode] ASC,
 	[eventLogID] ASC
 	
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -300,7 +299,8 @@ CREATE VIEW [dbo].[ПросмотрЗаписиДанных]
 			                [USR].[Uuid] AS [ПользовательUUID],
 			                [RD].[Компьютер] AS [Компьютер],
 			                [CMP].[Наименование] AS [КомпьютерНаименование],
-							[RD].[Метаданные] AS [Метаданные],
+							[RD].[Метаданные] AS [МетаданныеПредставление],
+							[META].[Id] AS [Метаданные],
 			                [META].[Наименование] AS [МетаданныеНаименование],
 			                [META].[Uuid] AS [МетаданныеИдентификаторДанных],
 							[RD].[Данные],
@@ -337,9 +337,12 @@ CREATE VIEW [dbo].[ПросмотрЗаписиДанных]
 			                LEFT JOIN [dbo].[События] AS [EVNT]
 			                ON [RD].[ИнформационнаяСистема] = [EVNT].[ИнформационнаяСистема]
 				                AND [RD].[Событие] = [EVNT].[Id]
-			                LEFT JOIN [dbo].[Метаданные] AS [META]
-			                ON [RD].[ИнформационнаяСистема] = [META].[ИнформационнаяСистема]
-				                AND [RD].[Метаданные] = CAST([META].[Id] AS [nvarchar](max))
+ 							LEFT JOIN [dbo].[СоответствияСтрокМетаданным] AS [SSM]
+								LEFT JOIN [dbo].[Метаданные] AS [META]
+			               		 ON [SSM].[ИнформационнаяСистема] = [META].[ИнформационнаяСистема]
+				                	AND [SSM].[metadataCode] = [META].[Id] 
+			                ON [RD].[ИнформационнаяСистема] = [SSM].[ИнформационнаяСистема]
+				                AND [RD].[Id] = [SSM].[eventLogID]
 			                LEFT JOIN [dbo].[РабочиеСервера] AS [WSRV]
 			                ON [RD].[ИнформационнаяСистема] = [WSRV].[ИнформационнаяСистема]
 				                AND [RD].[РабочийСервер] = [WSRV].[Id]
@@ -465,5 +468,12 @@ CREATE NONCLUSTERED INDEX [ИнформационнаяСистема_Id] ON [db
 (
 	[ИнформационнаяСистема] ASC,
 	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [ИнформационнаяСистема_metadataCode] ON [dbo].[СоответствияСтрокМетаданным]
+(
+	[ИнформационнаяСистема] ASC,
+	[metadataCode] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
